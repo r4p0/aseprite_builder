@@ -17,4 +17,8 @@
 4. 保存并提交`commit`.
 5. 工作流将会在每天以及每次`Push`时检测`Aseprite`最新发布版本
 
+# 技术细节
+
+本工作流遵循 [Aseprite repo](https://github.com/aseprite/aseprite/blob/master/INSTALL.md) 描述的操作指南
+
 TODO
