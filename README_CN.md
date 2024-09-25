@@ -21,4 +21,11 @@
 
 本工作流遵循 [Aseprite repo](https://github.com/aseprite/aseprite/blob/master/INSTALL.md) 描述的操作指南
 
+1. 每天检查 GitHub 上是否有新的 Aseprite 版本（与缓存版本进行比较）
+2. 如果版本较新，则创建一个 draft Release，用于存放后续构建任务可将二进制文件。
+3. 开始构建
+4. 从缓存中获取Skia，如果没有则会自动下载。
+5. 使用CMake和Ninja工具编译。
+6. 创建发布文件的压缩包，并上传发布到步骤 2 的draft Release中。
+
 TODO
