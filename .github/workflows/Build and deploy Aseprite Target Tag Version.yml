@@ -7,7 +7,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  TagName: v1.2.40
+  TagName: v1.3.10.1
 
 jobs:
   check-version:
@@ -42,6 +42,7 @@ jobs:
         key: cached_version
     - name: Should we start new build?
       id: should_build
+      if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/fix' || steps.version_check.outputs.cache-hit != 'true'
       run: echo "should_build=true" >> $GITHUB_OUTPUT
     - name: Create Release
       id: create_release
@@ -72,7 +73,7 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@v3
       - name: (Ubuntu) Install dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install -y cmake ninja-build libxcursor-dev libxi-dev libgl1-mesa-dev
+        run: sudo apt update && sudo apt install -y cmake ninja-build libxcursor-dev libxi-dev libgl1-mesa-dev
       - name: (macOS) Install dependencies
         if: matrix.os == 'macOS-latest'
         run: brew install ninja p7zip
