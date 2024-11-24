@@ -42,7 +42,6 @@ jobs:
         key: cached_version
     - name: Should we start new build?
       id: should_build
-      if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/fix' || steps.version_check.outputs.cache-hit != 'true'
       run: echo "should_build=true" >> $GITHUB_OUTPUT
     - name: Create Release
       id: create_release
