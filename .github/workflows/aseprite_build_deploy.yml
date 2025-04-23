@@ -73,9 +73,13 @@ jobs:
       - name: (Windows) Install dependencies
         if: matrix.os == 'windows-latest'
         uses: seanmiddleditch/gha-setup-ninja@v3
+      - name: (Windows) Remove OpenSLL from PATH
+        if: matrix.os == 'windows-latest'
+        shell: powershell
+        run: Remove-Item -Recurse -Force "C:\Program Files\OpenSSL\"
       - name: (Ubuntu) Install dependencies
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt update && sudo apt install -y cmake ninja-build libxcursor-dev libxi-dev libgl1-mesa-dev
+        run: sudo apt update && sudo apt install -y cmake ninja-build libxcursor-dev libxi-dev libgl1-mesa-dev libfontconfig-dev
       - name: (macOS) Install dependencies
         if: matrix.os == 'macOS-latest'
         run: brew install ninja p7zip
@@ -87,13 +91,15 @@ jobs:
           key: skia-${{ matrix.os }}-cache
       - name: Download Skia if not in cache (linux)
         if: steps.skia-cache.outputs.cache-hit != 'true' && matrix.os == 'ubuntu-latest'
+          # curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-${{ runner.os }}-Release-x64-libstdc++.zip
         run: |
-          curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-${{ runner.os }}-Release-x64-libstdc++.zip
+          curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-${{ runner.os }}-Release-x64.zip
           unzip Skia-${{ runner.os }}-Release-X64.zip -d skia
       - name: Download Skia if not in cache
         if: steps.skia-cache.outputs.cache-hit != 'true' && matrix.os != 'ubuntu-latest'
+          # curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-${{ runner.os }}-Release-x64.zip
         run: |
-          curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-${{ runner.os }}-Release-x64.zip
+          curl -o Skia-${{ runner.os }}-Release-X64.zip -L https://github.com/aseprite/skia/releases/download/m124-08a5439a6b/Skia-${{ runner.os }}-Release-x64.zip
           unzip Skia-${{ runner.os }}-Release-X64.zip -d skia
       - name: Download Aseprite release
         run: |
@@ -110,16 +116,16 @@ jobs:
       - name: (Windows) Run CMake
         if: matrix.os == 'windows-latest'
         working-directory: aseprite/build
-        shell: cmd
-        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_IGNORE_PATH='C:/ProgramData/chocolatey/bin/;C:/Strawberry/c/bin/' -DLAF_BACKEND=skia -DSKIA_DIR=../../skia -DSKIA_LIBRARY_DIR=../../skia/out/Release-x64 -G Ninja ..
+        shell: pwsh
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_IGNORE_PATH='C:/ProgramData/chocolatey/bin/;C:/Strawberry/c/bin/' -DLAF_BACKEND=skia -DSKIA_DIR="$(Convert-Path ../../skia)" -DSKIA_LIBRARY_DIR="$(Convert-Path ../../skia/out/Release-x64)" -DSKIA_LIBRARY="$(Convert-Path ../../skia/out/Release-x64/skia.lib)" -G Ninja ..
       - name: (Ubuntu) Run CMake
         if: matrix.os == 'ubuntu-latest'
         working-directory: aseprite/build
-        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DLAF_BACKEND=skia -DSKIA_DIR=../../skia -DSKIA_LIBRARY_DIR=../../skia/out/Release-x64 -G Ninja ..
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DLAF_BACKEND=skia -DSKIA_DIR=$(realpath ../../skia) -DSKIA_LIBRARY_DIR=$(realpath ../../skia/out/Release-x64) -G Ninja ..
       - name: (macOS) Run CMake
         if: matrix.os == 'macOS-latest'
         working-directory: aseprite/build
-        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DLAF_BACKEND=skia -DSKIA_DIR=../../skia -DSKIA_LIBRARY_DIR=../../skia/out/Release-x64 -G Ninja ..
+        run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.9 -DCMAKE_OSX_SYSROOT=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -DLAF_BACKEND=skia -DSKIA_DIR=$(realpath ../../skia) -DSKIA_LIBRARY_DIR=$(realpath ../../skia/out/Release-x64) -G Ninja ..
       - name: Run Ninja
         working-directory: aseprite/build
         run: ninja aseprite
